@@ -7,3 +7,7 @@
 
 # tfplan files
 *.tfplan
+
+
+# vim swap files
+.swp
