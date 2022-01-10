@@ -51,3 +51,44 @@ resource "aws_security_group" "gdx_security_group" {
   vpc_id         = aws_vpc.gdx_prototype.id
 }
 
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id               = aws_vpc.gdx_prototype.id
+  service_name         = "com.amazonaws.${local.current_region}.ssm"
+  private_dns_enabled  = true
+  tags                 = {
+    Name = "gdx-prototype-${var.stack_identifier}-private-ssm"
+  }
+  vpc_endpoint_type    = "Interface"
+  security_group_ids   = [
+    aws_security_group.gdx_security_group.id,
+  ]
+  subnet_ids           = [aws_subnet.private[0].id]
+}
+
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id       = aws_vpc.gdx_prototype.id
+  service_name = "com.amazonaws.${local.current_region}.ssmmessages"
+  private_dns_enabled  = true
+  tags = {
+    Name = "gdx-prototype-${var.stack_identifier}-private-ssmmsg"
+  }
+  vpc_endpoint_type = "Interface"
+  security_group_ids = [
+    aws_security_group.gdx_security_group.id,
+  ]
+  subnet_ids           = [aws_subnet.private[0].id]
+}
+
+resource "aws_vpc_endpoint" "ec2messages" {
+  vpc_id       = aws_vpc.gdx_prototype.id
+  service_name = "com.amazonaws.${local.current_region}.ec2messages"
+  private_dns_enabled  = true
+  tags = {
+    Name = "gdx-prototype-${var.stack_identifier}-private-ec2msg"
+  }
+  vpc_endpoint_type = "Interface"
+  security_group_ids = [
+    aws_security_group.gdx_security_group.id,
+  ]
+  subnet_ids           = [aws_subnet.private[0].id]
+}
