@@ -24,7 +24,19 @@ resource "aws_subnet" "private" {
   availability_zone = local.az_names[count.index]
   cidr_block        = cidrsubnet(local.vpc_cidr, 8, count.index)
   tags = {
-    Name = "gdx-proto-${var.stack_identifier}-private-${count.index}"
+    Name = "gdx-prototype-${var.stack_identifier}-private-${count.index}"
   }
 }
 
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.gdx_prototype.id
+  tags = {
+    Name = "gdx-prototype-${var.stack_identifier}-private"
+  }
+}
+
+resource "aws_route_table_association" "private" {
+  count          = length(aws_subnet.private)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
+}

@@ -10,4 +10,4 @@
 
 
 # vim swap files
-.swp
+*.swp
