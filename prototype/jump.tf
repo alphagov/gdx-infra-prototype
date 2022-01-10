@@ -28,5 +28,6 @@ data "aws_iam_policy_document" "jump_iam_policy_document" {
 resource "aws_iam_role" "jump_iam_role" {
   name = "gdx-jump-iam-role"
 
-  assume_role_policy = data.aws_iam_policy_document.jump_iam_policy_document.json
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+  assume_role_policy    = data.aws_iam_policy_document.jump_iam_policy_document.json
 }
