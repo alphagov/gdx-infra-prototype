@@ -5,7 +5,7 @@ resource "aws_security_group" "jump_security_group" {
 }
 
 resource "aws_security_group_rule" "jump_allow_all_egress" {
-  security_group_id    = aws_security_group.gdx_security_group.id
+  security_group_id    = aws_security_group.jump_security_group.id
   from_port            = 0 
   to_port              = 0
   protocol             = "-1"
@@ -31,3 +31,9 @@ resource "aws_iam_role" "jump_iam_role" {
   managed_policy_arns   = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
   assume_role_policy    = data.aws_iam_policy_document.jump_iam_policy_document.json
 }
+
+resource "aws_iam_instance_profile" "gdx_jump_iam_profile" {
+  name = "gdx-jump-iam-profile"
+  role = aws_iam_role.jump_iam_role.name
+}
+
