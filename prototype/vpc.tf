@@ -51,6 +51,15 @@ resource "aws_security_group" "gdx_security_group" {
   vpc_id         = aws_vpc.gdx_prototype.id
 }
 
+resource "aws_security_group_rule" "endpoint_https_ingress" {
+  security_group_id    = aws_security_group.gdx_security_group.id
+  from_port            = 443
+  to_port              = 443
+  protocol             = "tcp"
+  cidr_blocks          = [aws_vpc.gdx_prototype.cidr_block]
+  type                 = "ingress"
+}
+
 resource "aws_vpc_endpoint" "ssm" {
   vpc_id               = aws_vpc.gdx_prototype.id
   service_name         = "com.amazonaws.${local.current_region}.ssm"
@@ -62,7 +71,7 @@ resource "aws_vpc_endpoint" "ssm" {
   security_group_ids   = [
     aws_security_group.gdx_security_group.id,
   ]
-  subnet_ids           = [aws_subnet.private[0].id]
+  subnet_ids           = aws_subnet.private[*].id
 }
 
 resource "aws_vpc_endpoint" "ssmmessages" {
@@ -76,7 +85,7 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   security_group_ids = [
     aws_security_group.gdx_security_group.id,
   ]
-  subnet_ids           = [aws_subnet.private[0].id]
+  subnet_ids           = aws_subnet.private[*].id
 }
 
 resource "aws_vpc_endpoint" "ec2messages" {
@@ -90,5 +99,5 @@ resource "aws_vpc_endpoint" "ec2messages" {
   security_group_ids = [
     aws_security_group.gdx_security_group.id,
   ]
-  subnet_ids           = [aws_subnet.private[0].id]
+  subnet_ids           = aws_subnet.private[*].id
 }
