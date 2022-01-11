@@ -76,14 +76,6 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-resource "aws_instance" "jump_ec2_instance" {
-  ami                     =  data.aws_ami.amazon_linux.id
-  instance_type           = "t3.small"
-  subnet_id               = aws_subnet.private[0].id
-  vpc_security_group_ids  = [aws_security_group.jump_security_group.id]
-  iam_instance_profile    = aws_iam_instance_profile.gdx_jump_iam_profile.name
-}
-
 resource "aws_s3_bucket" "jump_package_storage" {
   bucket = "${data.aws_caller_identity.current.account_id}-${var.stack_identifier}-jump-packages"
   acl    = "private"
@@ -97,3 +89,18 @@ resource "aws_s3_bucket_public_access_block" "stack_state_block" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
+resource "aws_instance" "jump_ec2_instance" {
+  ami                     =  data.aws_ami.amazon_linux.id
+  instance_type           = "t3.small"
+  subnet_id               = aws_subnet.private[0].id
+  vpc_security_group_ids  = [aws_security_group.jump_security_group.id]
+  iam_instance_profile    = aws_iam_instance_profile.gdx_jump_iam_profile.name
+  user_data               = templatefile(
+    "jump_init.sh.tftpl",
+    {
+      bucket = aws_s3_bucket.jump_package_storage.bucket
+    }
+  )
+}
+

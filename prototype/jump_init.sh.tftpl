@@ -1,0 +1,11 @@
+#!/bin/bash
+
+env > /tmp/environment
+echo ${bucket} > /tmp/bucket_name
+amazon-linux-extras install java-openjdk11
+
+cd ~
+aws s3 get s3://${bucket}/kafka_2.12-2.8.1.tgz
+tar zxvf kafka_2.12-2.8.1.tgz
+
+
