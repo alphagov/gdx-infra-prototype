@@ -40,6 +40,16 @@ case "${task}" in
     apply)
         terraform -chdir=${stack_name} apply ${stack_name}-${stack_identifier}.tfplan
         ;;
+    destroy)
+        terraform -chdir=${stack_name} destroy \
+            -var stack_identifier=${stack_identifier}
+        ;;
+    rebuild)
+        terraform -chdir=${stack_name} destroy \
+            -var stack_identifier=${stack_identifier}
+        terraform -chdir=${stack_name} apply \
+            -var stack_identifier=${stack_identifier}
+        ;;
     *)
         echo "Unrecognised task: ${task}"
         exit 1

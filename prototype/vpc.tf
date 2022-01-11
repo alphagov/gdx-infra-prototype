@@ -45,14 +45,14 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_security_group" "gdx_security_group" {
-  name           = "gdx-prototype-security-group"
-  description    = "Keeping all the bits private"
+resource "aws_security_group" "aws_endpoint_interfaces_security_group" {
+  name           = "aws-endpoint-${var.stack_identifier}-security-group"
+  description    = "Allow access to AWS endpoints (ssm, ec2 and messages)"
   vpc_id         = aws_vpc.gdx_prototype.id
 }
 
 resource "aws_security_group_rule" "endpoint_https_ingress" {
-  security_group_id    = aws_security_group.gdx_security_group.id
+  security_group_id    = aws_security_group.aws_endpoint_interfaces_security_group.id
   from_port            = 443
   to_port              = 443
   protocol             = "tcp"
@@ -69,7 +69,7 @@ resource "aws_vpc_endpoint" "ssm" {
   }
   vpc_endpoint_type    = "Interface"
   security_group_ids   = [
-    aws_security_group.gdx_security_group.id,
+    aws_security_group.aws_endpoint_interfaces_security_group.id,
   ]
   subnet_ids           = aws_subnet.private[*].id
 }
@@ -83,7 +83,7 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   }
   vpc_endpoint_type = "Interface"
   security_group_ids = [
-    aws_security_group.gdx_security_group.id,
+    aws_security_group.aws_endpoint_interfaces_security_group.id,
   ]
   subnet_ids           = aws_subnet.private[*].id
 }
@@ -97,7 +97,7 @@ resource "aws_vpc_endpoint" "ec2messages" {
   }
   vpc_endpoint_type = "Interface"
   security_group_ids = [
-    aws_security_group.gdx_security_group.id,
+    aws_security_group.aws_endpoint_interfaces_security_group.id,
   ]
   subnet_ids           = aws_subnet.private[*].id
 }
