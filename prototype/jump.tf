@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 resource "aws_security_group" "jump_security_group" {
   name           = "gdx-jump-${var.stack_identifier}-security-group"
   description    = "Jump Box for developer interactions via console with kafka"
@@ -25,10 +27,37 @@ data "aws_iam_policy_document" "jump_iam_policy_document" {
   }
 }
 
+data "aws_iam_policy_document" "package_store_readonly" {
+  statement {
+    sid = "ListBucket"
+
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [
+      "${aws_s3_bucket.jump_package_storage.arn}"
+    ]
+  }
+  statement {
+    sid = "ReadObjects"
+    actions = [
+      "s3:GetObject",
+    ]
+    resources = [
+      "${aws_s3_bucket.jump_package_storage.arn}/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "package_store_policy" {
+  name = "gdx-jump-${var.stack_identifier}-package-store-policy"
+  policy = data.aws_iam_policy_document.package_store_readonly.json
+}
+
 resource "aws_iam_role" "jump_iam_role" {
   name = "gdx-jump-${var.stack_identifier}-iam-role"
 
-  managed_policy_arns   = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",aws_iam_policy.package_store_policy.arn]
   assume_role_policy    = data.aws_iam_policy_document.jump_iam_policy_document.json
 }
 
@@ -53,4 +82,18 @@ resource "aws_instance" "jump_ec2_instance" {
   subnet_id               = aws_subnet.private[0].id
   vpc_security_group_ids  = [aws_security_group.jump_security_group.id]
   iam_instance_profile    = aws_iam_instance_profile.gdx_jump_iam_profile.name
+}
+
+resource "aws_s3_bucket" "jump_package_storage" {
+  bucket = "${data.aws_caller_identity.current.account_id}-${var.stack_identifier}-jump-packages"
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_public_access_block" "stack_state_block" {
+  bucket = aws_s3_bucket.jump_package_storage.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }

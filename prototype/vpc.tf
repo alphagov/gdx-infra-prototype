@@ -101,3 +101,18 @@ resource "aws_vpc_endpoint" "ec2messages" {
   ]
   subnet_ids           = aws_subnet.private[*].id
 }
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id               = aws_vpc.gdx_prototype.id
+  service_name         = "com.amazonaws.${local.current_region}.s3"
+  tags                 = {
+    Name = "gdx-prototype-${var.stack_identifier}-private-s3"
+  }
+  vpc_endpoint_type    = "Gateway"
+}
+
+resource "aws_vpc_endpoint_route_table_association" "s3" {
+  route_table_id  = aws_route_table.private.id
+  vpc_endpoint_id = aws_vpc_endpoint.s3.id
+}
+
