@@ -1,5 +1,3 @@
-data "aws_caller_identity" "current" {}
-
 resource "aws_security_group" "jump_security_group" {
   name           = "gdx-jump-${var.stack_identifier}-security-group"
   description    = "Jump Box for developer interactions via console with kafka"
@@ -27,6 +25,10 @@ data "aws_iam_policy_document" "jump_iam_policy_document" {
   }
 }
 
+data "aws_s3_bucket" "gdx_artifact_storage" {
+  bucket = "${data.aws_caller_identity.current.account_id}-gdx-artifacts"
+}
+
 data "aws_iam_policy_document" "package_store_readonly" {
   statement {
     sid = "ListBucket"
@@ -35,7 +37,7 @@ data "aws_iam_policy_document" "package_store_readonly" {
       "s3:ListBucket",
     ]
     resources = [
-      "${aws_s3_bucket.jump_package_storage.arn}"
+      "${data.aws_s3_bucket.gdx_artifact_storage.arn}"
     ]
   }
   statement {
@@ -44,7 +46,7 @@ data "aws_iam_policy_document" "package_store_readonly" {
       "s3:GetObject",
     ]
     resources = [
-      "${aws_s3_bucket.jump_package_storage.arn}/*"
+      "${data.aws_s3_bucket.gdx_artifact_storage.arn}/*"
     ]
   }
 }
@@ -76,20 +78,6 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-resource "aws_s3_bucket" "jump_package_storage" {
-  bucket = "${data.aws_caller_identity.current.account_id}-${var.stack_identifier}-jump-packages"
-  acl    = "private"
-}
-
-resource "aws_s3_bucket_public_access_block" "stack_state_block" {
-  bucket = aws_s3_bucket.jump_package_storage.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
 resource "aws_instance" "jump_ec2_instance" {
   ami                     =  data.aws_ami.amazon_linux.id
   instance_type           = "t3.small"
@@ -99,7 +87,7 @@ resource "aws_instance" "jump_ec2_instance" {
   user_data               = templatefile(
     "jump_init.sh.tftpl",
     {
-      bucket = aws_s3_bucket.jump_package_storage.bucket
+      bucket = "${data.aws_caller_identity.current.account_id}-gdx-artifacts"
     }
   )
 }
