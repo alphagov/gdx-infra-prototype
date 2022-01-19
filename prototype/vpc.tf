@@ -8,7 +8,7 @@ locals {
 resource "aws_vpc" "gdx_prototype" {
   cidr_block = local.vpc_cidr
 
-  enable_dns_support = true
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
@@ -46,38 +46,38 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "aws_endpoint_interfaces_security_group" {
-  name           = "aws-endpoint-${var.stack_identifier}-security-group"
-  description    = "Allow access to AWS endpoints (ssm, ec2 and messages)"
-  vpc_id         = aws_vpc.gdx_prototype.id
+  name        = "aws-endpoint-${var.stack_identifier}-security-group"
+  description = "Allow access to AWS endpoints (ssm, ec2 and messages)"
+  vpc_id      = aws_vpc.gdx_prototype.id
 }
 
 resource "aws_security_group_rule" "endpoint_https_ingress" {
-  security_group_id    = aws_security_group.aws_endpoint_interfaces_security_group.id
-  from_port            = 443
-  to_port              = 443
-  protocol             = "tcp"
-  cidr_blocks          = [aws_vpc.gdx_prototype.cidr_block]
-  type                 = "ingress"
+  security_group_id = aws_security_group.aws_endpoint_interfaces_security_group.id
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = [aws_vpc.gdx_prototype.cidr_block]
+  type              = "ingress"
 }
 
 resource "aws_vpc_endpoint" "ssm" {
-  vpc_id               = aws_vpc.gdx_prototype.id
-  service_name         = "com.amazonaws.${local.current_region}.ssm"
-  private_dns_enabled  = true
-  tags                 = {
+  vpc_id              = aws_vpc.gdx_prototype.id
+  service_name        = "com.amazonaws.${local.current_region}.ssm"
+  private_dns_enabled = true
+  tags = {
     Name = "gdx-prototype-${var.stack_identifier}-private-ssm"
   }
-  vpc_endpoint_type    = "Interface"
-  security_group_ids   = [
+  vpc_endpoint_type = "Interface"
+  security_group_ids = [
     aws_security_group.aws_endpoint_interfaces_security_group.id,
   ]
-  subnet_ids           = aws_subnet.private[*].id
+  subnet_ids = aws_subnet.private[*].id
 }
 
 resource "aws_vpc_endpoint" "ssmmessages" {
-  vpc_id       = aws_vpc.gdx_prototype.id
-  service_name = "com.amazonaws.${local.current_region}.ssmmessages"
-  private_dns_enabled  = true
+  vpc_id              = aws_vpc.gdx_prototype.id
+  service_name        = "com.amazonaws.${local.current_region}.ssmmessages"
+  private_dns_enabled = true
   tags = {
     Name = "gdx-prototype-${var.stack_identifier}-private-ssmmsg"
   }
@@ -85,13 +85,13 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   security_group_ids = [
     aws_security_group.aws_endpoint_interfaces_security_group.id,
   ]
-  subnet_ids           = aws_subnet.private[*].id
+  subnet_ids = aws_subnet.private[*].id
 }
 
 resource "aws_vpc_endpoint" "ec2messages" {
-  vpc_id       = aws_vpc.gdx_prototype.id
-  service_name = "com.amazonaws.${local.current_region}.ec2messages"
-  private_dns_enabled  = true
+  vpc_id              = aws_vpc.gdx_prototype.id
+  service_name        = "com.amazonaws.${local.current_region}.ec2messages"
+  private_dns_enabled = true
   tags = {
     Name = "gdx-prototype-${var.stack_identifier}-private-ec2msg"
   }
@@ -99,16 +99,44 @@ resource "aws_vpc_endpoint" "ec2messages" {
   security_group_ids = [
     aws_security_group.aws_endpoint_interfaces_security_group.id,
   ]
-  subnet_ids           = aws_subnet.private[*].id
+  subnet_ids = aws_subnet.private[*].id
 }
 
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id               = aws_vpc.gdx_prototype.id
-  service_name         = "com.amazonaws.${local.current_region}.s3"
-  tags                 = {
+  vpc_id       = aws_vpc.gdx_prototype.id
+  service_name = "com.amazonaws.${local.current_region}.s3"
+  tags = {
     Name = "gdx-prototype-${var.stack_identifier}-private-s3"
   }
-  vpc_endpoint_type    = "Gateway"
+  vpc_endpoint_type = "Gateway"
+}
+
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = aws_vpc.gdx_prototype.id
+  service_name        = "com.amazonaws.${local.current_region}.ecr.dkr"
+  private_dns_enabled = true
+  tags = {
+    Name = "gdx-prototype-${var.stack_identifier}-private-ecrdkr"
+  }
+  vpc_endpoint_type = "Interface"
+  security_group_ids = [
+    aws_security_group.aws_endpoint_interfaces_security_group.id,
+  ]
+  subnet_ids = aws_subnet.private[*].id
+}
+
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = aws_vpc.gdx_prototype.id
+  service_name        = "com.amazonaws.${local.current_region}.ecr.api"
+  private_dns_enabled = true
+  tags = {
+    Name = "gdx-prototype-${var.stack_identifier}-private-ecrapi"
+  }
+  vpc_endpoint_type = "Interface"
+  security_group_ids = [
+    aws_security_group.aws_endpoint_interfaces_security_group.id,
+  ]
+  subnet_ids = aws_subnet.private[*].id
 }
 
 resource "aws_vpc_endpoint_route_table_association" "s3" {
