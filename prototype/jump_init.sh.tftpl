@@ -9,4 +9,11 @@ cd /opt/kafka
 aws s3 cp s3://${bucket}/kafka_2.12-2.8.1.tgz .
 tar -zxvf kafka_2.12-2.8.1.tgz
 
+#install docker
+sudo su
+
+if [ "${USER}" == "root" ]; then
+  sudo amazon-linux-extras install docker
+fi
+
 

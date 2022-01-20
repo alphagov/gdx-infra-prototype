@@ -1,4 +1,3 @@
-resource "aws_ecr_repository" "gdx_registry" {
-  name = "gdx-registry"
-  
+resource "aws_ecr_repository" "demo_producer" {
+  name = "gdx/demo-producer"
 }
