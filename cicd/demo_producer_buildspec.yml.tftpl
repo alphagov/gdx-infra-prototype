@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_URI}
+  build:
+    commands:
+      - cd demo-producer-py
+      - BUILD_TAG=$${CODEBUILD_BUILD_NUMBER} ./tasks build-container
+  post_build:
+    commands:
+      - docker tag demo-producer:$${CODEBUILD_BUILD_NUMBER} ${ECR_URI}/${ECR_REPO_NAME}:$${CODEBUILD_BUILD_NUMBER}
+      - docker push ${ECR_URI}/${ECR_REPO_NAME}:$${CODEBUILD_BUILD_NUMBER}
