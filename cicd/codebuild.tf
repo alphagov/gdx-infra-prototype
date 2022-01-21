@@ -84,6 +84,3 @@ resource "aws_codebuild_project" "demo_producer" {
   }
 
 }
-
-#TODO: logs_config
-#TODO: iam permissions
