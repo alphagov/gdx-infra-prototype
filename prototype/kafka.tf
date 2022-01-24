@@ -31,7 +31,7 @@ resource "aws_security_group_rule" "zookeeper_allow_ingress" {
 }
 
 resource "aws_cloudwatch_log_group" "gdx_msk" {
-  name = "gdx-msk-logs"
+  name = "gdx-msk-${var.stack_identifier}-logs"
 }
 
 resource "aws_msk_cluster" "kafka_cluster" {
